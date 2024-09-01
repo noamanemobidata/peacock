@@ -7,7 +7,7 @@ ui <- fluidPage(
     tags$title("PEACOCK"),
     tags$meta(name = "title", content = "PEACOCK - ALK TO YOUR DB"),
     tags$meta(name = "description", content = "Author: miskowski85@hotmail.fr"),
-    tags$link(rel = "icon", type = "image/x-icon", href = "logo.svg"),
+    tags$link(rel = "icon", type = "image/x-icon", href = "www/logo.svg"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/typed.js@2.0.12"),
     
     # Custom JavaScript for Typed.js integration
@@ -44,7 +44,7 @@ ui <- fluidPage(
     ), 
     title = tags$span(
       tags$img(
-        src = "logo.svg",
+        src = "www/logo.svg",
         width = "50px",
         height = "auto",
         class = "me-3",
