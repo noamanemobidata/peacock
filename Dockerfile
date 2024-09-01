@@ -17,6 +17,8 @@ ENV CPLUS_INCLUDE_PATH=/usr/include/gdal \
     C_INCLUDE_PATH=/usr/include/gdal \
     RENV_VERSION=1.0.7
 
+COPY renv.lock /renv.lock
+
 # Install renv and restore packages in one layer
 RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))" && \
     R -e 'renv::restore()'
