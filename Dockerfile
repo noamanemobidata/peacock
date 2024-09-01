@@ -18,8 +18,7 @@ ENV CPLUS_INCLUDE_PATH=/usr/include/gdal \
     RENV_VERSION=1.0.7
 
 # Install renv and restore packages in one layer
-RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org'))" && \
-    R -e "remotes::install_github('rstudio/renv@${RENV_VERSION}')" && \
+RUN R -e "install.packages('renv', repos = c(CRAN = 'https://cloud.r-project.org'))" && \
     R -e 'renv::restore()'
 
 # Download, unzip, and rename the SQLite database in one layer
