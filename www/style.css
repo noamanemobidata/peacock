@@ -1,0 +1,23 @@
+.form-group {
+     margin-bottom: 0px!important; 
+}
+
+/*
+#prompt, #submit_btn, #start_btn{
+      border-radius: 10px!important;
+}
+
+.bttn-material-flat.bttn-sm {
+    padding: 6px 10px !important;
+}
+*/
+
+.input-group .btn-primary {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+#prompt {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
