@@ -30,7 +30,6 @@ RUN mkdir -p /app/data && \
 
 # Copy assets, static files, and scripts in one layer
 COPY www/ /app/www
-COPY data/ /app/data
 COPY *.R /app/
 
 # Expose the Shiny app port
