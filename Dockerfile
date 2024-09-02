@@ -31,6 +31,7 @@ RUN mkdir -p /app/data && \
 # Copy assets, static files, and scripts in one layer
 COPY www/ /app/www
 COPY *.R /app/
+COPY data/nycflights13.duckdb /app/data/
 
 # Expose the Shiny app port
 EXPOSE 3838
