@@ -8,14 +8,19 @@ library(shinyjs)
 library(RSQLite)
 library(httr)
 library(glue)
+library(dbplyr)
+library(duckdb)
+library(dplyr)
 
 
 employees <- dbConnect(RSQLite::SQLite(), "data/employees.db", flags = SQLITE_RO, vfs = "unix-none")
+con <- dbConnect(duckdb::duckdb(), dbdir="data/nycflights13.duckdb", read_only=T)
+
 
 OPENAI_API_KEY <- Sys.getenv("OPENAI_API_KEY")
 
 
-generate_db_tree <- function(con) {
+generate_db_tree <- function(con, name) {
   # Get all tables in the database
   tables <- dbListTables(con)
 
@@ -50,26 +55,18 @@ generate_db_tree <- function(con) {
   )
 
   # Set the name of the outer list to be the database name
-  names(final_structure) <- "employeesDB"
+  names(final_structure) <- name
 
   return(final_structure)
 }
 
 
-openai_response <- function(prompt) {
-  response <- POST(
-    url = "https://api.openai.com/v1/chat/completions",
-    add_headers(Authorization = paste("Bearer", OPENAI_API_KEY)),
-    content_type_json(),
-    encode = "json",
-    body = list(
-      model = "gpt-4o-mini",
-      temperature = 1,
-      messages = list(
-        list(
-          role = "system",
-          content = "You are a SQLite expert. Given an input question, first create a syntactically correct SQLite query to run, then look at the results of the query and return the answer to the input question.
-Unless the user specifies in the question a specific number of examples to obtain, query for at most 5 results using the LIMIT clause as per SQLite. You can order the results to return the most informative data in the database.
+openai_response <- function(prompt, db) {
+  
+  
+  if(db=="EmployeeDB"){
+    msg="You are a SQLite expert. Given an input question, first create a syntactically correct SQLite query to run, then look at the results of the query and return the answer to the input question.
+Unless the user specifies in the question a specific number of examples to obtain, query for at most 100 results using the LIMIT clause as per SQLite. You can order the results to return the most informative data in the database.
 Never query for all columns from a table. You must query only the columns that are needed to answer the question. Wrap each column name in double quotes (\") to denote them as delimited identifiers.
       Pay attention to use only the column names you can see in the tables below. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
       Pay attention to use date('now') function to get the current date, if the question involves \"today\".
@@ -160,10 +157,89 @@ Never query for all columns from a table. You must query only the columns that a
 ### Relationships
 - References `employees.emp_no`
 
-you have to answer the question without making any limit in your sql query. 
+
 produces ONLY the text of the sql request without any other text, and without  ```sql   
 if the question does not require an SQL answer, revise your answer as an sql comment 
         "
+  }else{
+    
+    msg="You are a Duckdb expert. Given an input question, first create a syntactically correct Duckdb query to run, then look at the results of the query and return the answer to the input question.
+Unless the user specifies in the question a specific number of examples to obtain, query for at most 100 results using the LIMIT clause as per Duckdb. You can order the results to return the most informative data in the database.
+Never query for all columns from a table. You must query only the columns that are needed to answer the question. Wrap each column name in double quotes (\") to denote them as delimited identifiers.
+      Pay attention to use only the column names you can see in the tables below. Be careful to not query for columns that do not exist. Also, pay attention to which column is in which table.
+      here is the description of the database: Table Explanations :
+
+table airports:
+columns:
+faa :FAA airport code.
+name:Usual name of the aiport.
+lat, lon :Location of airport.
+alt:Altitude, in feet.
+tz:Timezone offset from GMT.
+dst:Daylight savings time zone. A = Standard US DST: starts on the second Sunday of March, ends on the first Sunday of November. U = unknown. N = no dst.
+tzone:IANA time zone, as determined by GeoNames webservice. 
+
+table : airlines:
+columns:
+carrier :Two letter abbreviation.
+name:Full name.
+
+table : flights: 
+columns:
+year, month, day :Date of departure.
+dep_time, arr_time :Actual departure and arrival times (format HHMM or HMM), local tz.
+sched_dep_time, sched_arr_time:Scheduled departure and arrival times (format HHMM or HMM), local tz.
+dep_delay, arr_delay:Departure and arrival delays, in minutes. Negative times represent early departures/arrivals.
+carrier:Two letter carrier abbreviation. See airlines to get name.
+flight:Flight number.
+tailnum:Plane tail number. See planes for additional metadata.
+origin, dest:Origin and destination. See airports for additional metadata.
+air_time:Amount of time spent in the air, in minutes.
+distance:Distance between airports, in miles.
+hour, minute:Time of scheduled departure broken into hour and minutes.
+time_hour:Scheduled date and hour of the flight as a POSIXct date. Along with origin, can be used to join flights data to weather data.
+
+table : planes:
+columns:
+tailnum:Tail number.
+year:Year manufactured.
+type:Type of plane.
+manufacturer, model:Manufacturer and model.
+engines, seats:Number of engines and seats.
+speed:Average cruising speed in mph.
+engine:Type of engine.
+    
+weather
+Format
+A data frame with columns:
+origin:Weather station. Named origin to facilitate merging with flights data.
+year, month, day, hour:Time of recording.
+temp, dewp:Temperature and dewpoint in F.
+humid:Relative humidity.
+wind_dir, wind_speed, wind_gust:Wind direction (in degrees), speed and gust speed (in mph).
+precip:Precipitation, in inches.
+pressure:Sea level pressure in millibars.
+visib:Visibility in miles.
+time_hour:Date and hour of the recording as a POSIXct date.
+  
+produces ONLY the text of the sql request without any other text, and without  ```sql   
+if the question does not require an SQL answer, revise your answer as an sql comment 
+
+    "
+  }
+  
+  response <- POST(
+    url = "https://api.openai.com/v1/chat/completions",
+    add_headers(Authorization = paste("Bearer", OPENAI_API_KEY)),
+    content_type_json(),
+    encode = "json",
+    body = list(
+      model = "gpt-4o-mini",
+      temperature = 1,
+      messages = list(
+        list(
+          role = "system",
+          content = msg
         ),
         list(
           role = "user",
@@ -172,4 +248,6 @@ if the question does not require an SQL answer, revise your answer as an sql com
       )
     )
   )
+  
+  return(response)
 }

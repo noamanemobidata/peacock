@@ -2,7 +2,8 @@
 
 server <- function(input, output, session) {
   observeEvent(input$submit_btn, {
-    res <- openai_response(input$prompt)
+    
+    res <- openai_response(input$prompt, cons$name)
     session$sendCustomMessage("startTyping", content(res)$choices[[1]]$message$content)
   })
 
@@ -13,9 +14,43 @@ server <- function(input, output, session) {
     res$status <- "IN"
     res$df <- NULL
   })
+  
+  cons <- reactiveValues(con= employees, name= "EmployeeDB")
+  
+  observeEvent(input$db,{
+    
+ 
+    res$status <- "IN"
+    res$df <- NULL
+    
+      if( input$db=='sqlite'){
+        generate_db_tree(employees, "EmployeeDB")
+        cons$con <- employees
+        cons$name <- "EmployeeDB" 
+
+      }else{
+        generate_db_tree(con,"NYCFlights13")
+        cons$con <- con
+        cons$name <- "NYCFlights13" 
+
+      }
+      
+    
+    
+  })
 
   treeData <- reactive({
-    generate_db_tree(employees)
+    
+    if(is.null(input$db)){
+      generate_db_tree(employees, "EmployeeDB")
+    }else{
+      if( input$db=='sqlite'){
+        generate_db_tree(employees, "EmployeeDB")
+      }else{
+        generate_db_tree(con,"NYCFlights13")
+      }
+      
+    }
   })
 
 
@@ -38,7 +73,7 @@ server <- function(input, output, session) {
 
     tryCatch(
       {
-        res$df <- dbGetQuery(employees, input$ace_editor)
+        res$df <- dbGetQuery(cons$con, input$ace_editor)
 
         res$status <- "OK"
       },
@@ -61,12 +96,13 @@ server <- function(input, output, session) {
 
   observeEvent(input$tree4, {
     if (length((get_selected(input$tree4, "names"))) > 0) {
-      cond <- ((get_selected(input$tree4, "names"))[[1]] %in% dbListTables(conn = employees))
+      
+      cond <- ((get_selected(input$tree4, "names"))[[1]] %in% dbListTables(conn = cons$con))
 
 
       if (cond) {
         qr <- glue("SELECT * FROM {(get_selected(input$tree4,'names'))[[1]]} LIMIT 1000;")
-        res$df <- dbGetQuery(employees, qr)
+        res$df <- dbGetQuery(cons$con, qr)
 
         session$sendCustomMessage("startTyping", qr)
 
@@ -118,7 +154,7 @@ server <- function(input, output, session) {
                 )
               ),
               card_body(
-                aceEditor(outputId = "ace_editor", mode = "sql", readOnly = F, autoComplete = "live", theme = d, value = "", placeholder = "-- START YOUR SQL QUERY HERE, OR ASK AI", height = "300px")
+                aceEditor(outputId = "ace_editor", mode = "sql", readOnly = F, autoComplete = "live", theme = d, value = "", placeholder = "-- START YOUR SQL QUERY HERE, OR ASK AI",minLines = 7)
               ),
               card_footer(
                 tagList(
@@ -184,4 +220,79 @@ server <- function(input, output, session) {
   observe({
     updateTextInput(inputId = "tree4-search-input", placeholder = "🔍Type to search...")
   })
+  
+  
+  output$settings <- renderUI({
+    
+
+    
+    hidden(
+      radioButtons("db", label = NULL, choices = c("sqlite", "duckdb"))
+    )
+    
+    fluidPage(
+      fluidRow(
+        p("Select built-in database: "),
+        column(
+          12,
+          div(
+            id = "sqlite-option",
+            class = "db-option selected",
+            div(img(src = "sqlite.svg"), div("SQLite", class = "db-label")),
+            onclick = "selectDatabase('sqlite')"
+          ),
+          div(
+            id = "duckdb-option",
+            class = "db-option",
+            div(img(src = "duckdb.svg"), div("DuckDB", class = "db-label")),
+            onclick = "selectDatabase('duckdb')"
+          )
+        )
+      )
+      , 
+      br(), 
+      fluidRow(
+        p("Add your data: (wip)")
+      )
+      
+    )
+    
+    
+  })
+  
+
+  
+
+    output$title_sidebar <- renderUI({
+      
+      logo <- ifelse(is.null(input$db), "sqlite", input$db)
+      div(
+        div(img(src = paste0(logo, ".svg"), width='28px'), "Database Explorer", 
+            
+            popover( 
+              icon("info-circle"),
+              actionButton(inputId = "change_db", label = "CHANGE DB", icon = icon("exchange-alt"), 
+                           class = "btn btn-sm btn-primary"),
+              title = "Read Only DB"
+            )
+            
+        #     tooltip(
+        #   bsicons::bs_icon("info-circle"),
+        #   "Read Only DB",
+        #   id = "tooltip"
+        # )
+        )
+        
+        
+      )
+
+  })
+    
+    observeEvent(input$change_db, {
+      
+      nav_select(id = "tab_selector",selected = "Settings",session = session)
+      
+    })
+  
+  
 }

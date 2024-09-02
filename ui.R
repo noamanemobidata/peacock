@@ -3,6 +3,8 @@
 
 
 ui <- fluidPage(
+  
+  
   tags$head(
     tags$title("PEACOCK"),
     tags$meta(name = "title", content = "PEACOCK - ALK TO YOUR DB"),
@@ -10,6 +12,19 @@ ui <- fluidPage(
     tags$link(rel = "icon", type = "image/x-icon", href = "www/logo.svg"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/typed.js@2.0.12"),
     
+    
+    tags$script(HTML("
+    function selectDatabase(db) {
+      // Remove 'selected' class from all options
+      $('.db-option').removeClass('selected');
+      
+      // Add 'selected' class to the clicked option
+      $('#' + db + '-option').addClass('selected');
+      
+      // Update the hidden radio button value
+      Shiny.setInputValue('db', db, {priority: 'event'});
+    }
+  ")), 
     # Custom JavaScript for Typed.js integration
     tags$script(HTML(
       '
@@ -37,6 +52,8 @@ ui <- fluidPage(
   includeCSS("www/style.css"),
   shinyjs::useShinyjs(),
   page_navbar(
+    id="tab_selector", 
+    selected = "Main", 
     lang = "en",
     theme = bs_theme(
       preset = "shiny",
@@ -53,13 +70,7 @@ ui <- fluidPage(
       "PEACOCK"
     ),
     sidebar = sidebar(
-      title = div(
-        "Database Explorer", tooltip(
-          bsicons::bs_icon("info-circle"),
-          "Read Only SQLite",
-          id = "tooltip"
-        )
-      ),
+      title =uiOutput("title_sidebar"), 
       gap = "0.5rem", padding = "0.5rem",
       shinyTree("tree4",
                 theme = "proton", themeIcons = T, themeDots = T, stripes = F, search = T, searchtime = 1000,
@@ -74,15 +85,18 @@ ui <- fluidPage(
     ),
     nav_spacer(),
     nav_panel(
-      title = HTML('<i class="fas fa-home"></i> Main'),
+      icon = icon("home"), 
+      title = 'Main',
       uiOutput("main")
     ),
     nav_panel(
-      title = HTML('<i class="fas fa-cog"></i> settings'),
+      icon = icon("cog"), 
+      title = "Settings",
       uiOutput("settings")
     ),
     nav_panel(
-      title = HTML('<i class="fas fa-info-circle"></i> About'),
+      icon=icon("info-circle"), 
+      title ='About',
       uiOutput("about")
     ),
     nav_item(
