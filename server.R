@@ -232,7 +232,7 @@ server <- function(input, output, session) {
     
     fluidPage(
       fluidRow(
-        p("Select built-in database: "),
+        p("Select a built-in database : "),
         column(
           12,
           div(
@@ -252,7 +252,7 @@ server <- function(input, output, session) {
       , 
       br(), 
       fluidRow(
-        p("Add your data: (wip)")
+        p("Add yours : (wip)")
       )
       
     )
@@ -271,7 +271,7 @@ server <- function(input, output, session) {
             
             popover( 
               icon("info-circle"),
-              actionButton(inputId = "change_db", label = "CHANGE DB", icon = icon("exchange-alt"), 
+              actionButton(inputId = "switch_db", label = "CHANGE DB", icon = icon("exchange-alt"), 
                            class = "btn btn-sm btn-primary"),
               title = "Read Only DB"
             )
@@ -288,9 +288,10 @@ server <- function(input, output, session) {
 
   })
     
-    observeEvent(input$change_db, {
+    observeEvent(input$switch_db, {
       
       nav_select(id = "tab_selector",selected = "Settings",session = session)
+      shinyAce::updateAceEditor(session = session, editorId = "ace_editor", value = "")
       
     })
   
