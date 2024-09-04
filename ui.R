@@ -3,8 +3,7 @@
 
 
 ui <- fluidPage(
-  
-  
+  lang = "en",
   tags$head(
     tags$title("PEACOCK"),
     tags$meta(name = "title", content = "PEACOCK - ALK TO YOUR DB"),
@@ -54,7 +53,6 @@ ui <- fluidPage(
   page_navbar(
     id="tab_selector", 
     selected = "Home", 
-    lang = "en",
     theme = bs_theme(
       preset = "shiny",
       "primary" = "#0675DD"

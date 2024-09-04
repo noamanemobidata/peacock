@@ -255,13 +255,13 @@ server <- function(input, output, session) {
           div(
             id = "sqlite-option",
             class = "db-option selected",
-            div(img(src = "www/sqlite.svg"), div("SQLite", class = "db-label")),
+            div(img(src = "www/sqlite.svg",width = "auto",height = "auto", alt=""), div("SQLite", class = "db-label")),
             onclick = "selectDatabase('sqlite')"
           ),
           div(
             id = "duckdb-option",
             class = "db-option",
-            div(img(src = "www/duckdb.svg"), div("DuckDB", class = "db-label")),
+            div(img(src = "www/duckdb.svg",width = "auto",height = "auto", alt=""), div("DuckDB", class = "db-label")),
             onclick = "selectDatabase('duckdb')"
           )
         )
@@ -286,7 +286,7 @@ server <- function(input, output, session) {
       
       logo <- ifelse(is.null(input$db), "sqlite", input$db)
       div(
-        div(img(src = paste0("www/",logo, ".svg"), width='28px'), "Database Explorer", 
+        div(img(src = paste0("www/",logo, ".svg"), width='28px', width="auto", alt=""), "Database Explorer", 
             
             tooltip(
  
