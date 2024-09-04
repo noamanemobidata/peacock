@@ -53,7 +53,7 @@ ui <- fluidPage(
   shinyjs::useShinyjs(),
   page_navbar(
     id="tab_selector", 
-    selected = "Main", 
+    selected = "Home", 
     lang = "en",
     theme = bs_theme(
       preset = "shiny",
@@ -86,8 +86,8 @@ ui <- fluidPage(
     nav_spacer(),
     nav_panel(
       icon = icon("home"), 
-      title = 'Main',
-      uiOutput("main")
+      title = 'Home',
+      uiOutput("home")
     ),
     nav_panel(
       icon = icon("cog"), 

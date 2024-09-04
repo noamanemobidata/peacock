@@ -3,9 +3,20 @@
 server <- function(input, output, session) {
   observeEvent(input$submit_btn, {
     
-    res <- openai_response(input$prompt, cons$name)
-    session$sendCustomMessage("startTyping", content(res)$choices[[1]]$message$content)
-  })
+    if(nchar(input$prompt)>528){
+      
+      showNotification(ui = "Too long message! ", type = "error")
+      
+    }else{
+      res <- openai_response(input$prompt, cons$name)
+      session$sendCustomMessage("startTyping", content(res)$choices[[1]]$message$content)
+      
+    }
+
+  
+    
+    
+    })
 
 
   observeEvent(input$claer_btn, {
@@ -22,16 +33,19 @@ server <- function(input, output, session) {
  
     res$status <- "IN"
     res$df <- NULL
-    
+    shinyAce::updateAceEditor(session = session, editorId = "ace_editor", value = '-- START YOUR SQL QUERY HERE, OR ASK AI')
       if( input$db=='sqlite'){
         generate_db_tree(employees, "EmployeeDB")
         cons$con <- employees
         cons$name <- "EmployeeDB" 
-
+        updateTextInput(session = session, inputId = "prompt", placeholder = "find those departments where the average salary is less than the averages for all departments. Return department ID, average salary.")
+        
+        
       }else{
         generate_db_tree(con,"NYCFlights13")
         cons$con <- con
         cons$name <- "NYCFlights13" 
+        updateTextInput(session = session, inputId = "prompt", placeholder = "find the average distance by airline")
 
       }
       
@@ -123,7 +137,7 @@ server <- function(input, output, session) {
   })
 
 
-  output$main <- renderUI({
+  output$home <- renderUI({
     d <- ifelse(input$dark_mode == "dark", "terminal", "sqlserver")
 
     fluidRow(
@@ -147,6 +161,7 @@ server <- function(input, output, session) {
                     input_task_button(
                       id = "submit_btn",
                       label = "ASK",
+                      label_busy = "thinking",
                       icon = icon("paper-plane"),
                       class = "btn btn-sm btn-primary"
                     )
@@ -154,6 +169,7 @@ server <- function(input, output, session) {
                 )
               ),
               card_body(
+                
                 aceEditor(outputId = "ace_editor", mode = "sql", readOnly = F, autoComplete = "live", theme = d, value = "", placeholder = "-- START YOUR SQL QUERY HERE, OR ASK AI",minLines = 7)
               ),
               card_footer(
@@ -166,6 +182,7 @@ server <- function(input, output, session) {
                         id = "start_btn",
                         label = "RUN QUERY",
                         icon = icon("play"),
+                        label_busy = "thinking",
                         class = "btn btn-sm btn-primary"
                       )
                     ),
@@ -253,6 +270,8 @@ server <- function(input, output, session) {
       br(), 
       fluidRow(
         p("Add yours : (wip)")
+        
+        
       )
       
     )
@@ -276,11 +295,7 @@ server <- function(input, output, session) {
               title = "Read Only DB"
             )
             
-        #     tooltip(
-        #   bsicons::bs_icon("info-circle"),
-        #   "Read Only DB",
-        #   id = "tooltip"
-        # )
+
         )
         
         
