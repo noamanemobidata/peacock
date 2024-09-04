@@ -71,7 +71,7 @@ ui <- fluidPage(
     ),
     sidebar = sidebar(
       title =uiOutput("title_sidebar"), 
-      gap = "0.5rem", padding = "0.5rem",
+      gap = "0.5rem", padding = "0.5rem",width = "300px", 
       shinyTree("tree4",
                 theme = "proton", themeIcons = T, themeDots = T, stripes = F, search = T, searchtime = 1000,
                 types =

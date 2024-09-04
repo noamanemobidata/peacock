@@ -33,7 +33,7 @@ server <- function(input, output, session) {
  
     res$status <- "IN"
     res$df <- NULL
-    shinyAce::updateAceEditor(session = session, editorId = "ace_editor", value = '-- START YOUR SQL QUERY HERE, OR ASK AI')
+    shinyAce::updateAceEditor(session = session, editorId = "ace_editor",value = NULL)
       if( input$db=='sqlite'){
         generate_db_tree(employees, "EmployeeDB")
         cons$con <- employees
@@ -288,13 +288,11 @@ server <- function(input, output, session) {
       div(
         div(img(src = paste0("www/",logo, ".svg"), width='28px'), "Database Explorer", 
             
-            popover( 
-              icon("info-circle"),
-              actionButton(inputId = "switch_db", label = "CHANGE DB", icon = icon("exchange-alt"), 
-                           class = "btn btn-sm btn-primary"),
-              title = "Read Only DB"
+            tooltip(
+ 
+              actionButton(inputId = "switch_db", label = NULL, icon = icon("cog"),class="btn-secondary btn-sm", style="border-radius:50%;" ), 
+              "Change DB - Read Only"
             )
-            
 
         )
         
