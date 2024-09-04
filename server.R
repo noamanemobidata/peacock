@@ -49,7 +49,7 @@ server <- function(input, output, session) {
 
       }
       
-    
+    nav_select(id = "tab_selector",selected = "Home",session = session)
     
   })
 
