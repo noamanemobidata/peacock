@@ -10,7 +10,14 @@ ui <- fluidPage(
     tags$meta(name = "description", content = "Author: miskowski85@hotmail.fr"),
     tags$link(rel = "icon", type = "image/x-icon", href = "www/logo.svg"),
     tags$script(src = "https://cdn.jsdelivr.net/npm/typed.js@2.0.12"),
-    
+    tags$script(HTML('
+      $(document).on("keydown", function (e) {
+        if (e.ctrlKey && e.key === "Enter") {
+          e.preventDefault();
+          $("#start_btn").click();
+        }
+      });
+    ')), 
     
     tags$script(HTML("
     function selectDatabase(db) {

@@ -19,7 +19,7 @@ server <- function(input, output, session) {
   })
   
   
-  observeEvent(input$claer_btn, {
+  observeEvent(input$clear_btn, {
     shinyAce::updateAceEditor(session = session, editorId = "ace_editor", value = "")
     
     res$status <- "IN"
@@ -147,9 +147,7 @@ server <- function(input, output, session) {
         12,
         card(
           fill = TRUE,
-          # Applique une hauteur initiale de 300px à la carte pour commencer avec cette taille
-          style = "height: 300px; resize: vertical; overflow: auto;",  # Permet le redimensionnement vertical de la carte entière
-          
+          style = "height: 300px; resize: none; overflow: auto; position: relative;",  
           card_header(
             div(
               class = "input-group",
@@ -157,13 +155,13 @@ server <- function(input, output, session) {
                 id = "prompt",
                 type = "text",
                 class = "form-control form-control-sm",
-                placeholder = "find those departments where the average salary is less than the averages for all departments. Return department ID, average salary."
+                placeholder = "Find those departments where the average salary is less than the averages for all departments. Return department ID, average salary."
               ),
               tags$span(
                 class = "input-group-btn",
                 input_task_button(
                   id = "submit_btn",
-                  label = "ASK",
+                  label = "✨ ASK",
                   label_busy = "thinking",
                   icon = icon("paper-plane"),
                   class = "btn btn-sm btn-primary"
@@ -173,9 +171,7 @@ server <- function(input, output, session) {
           ),
           
           card_body(
-            style = "display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0;",  # Centre le contenu verticalement et horizontalement
-            
-            # Ace Editor centré au milieu
+            style = "display: flex; flex-direction: column; justify-content: center; align-items: center; height: calc(100% - 20px); padding: 0;",  # Ajustement de la hauteur
             div(
               style = "width: 100%; height: 100%;",  # Prend toute la place dans le card_body
               aceEditor(
@@ -191,17 +187,18 @@ server <- function(input, output, session) {
               )
             )
           ),
-          
+      
           card_footer(
             div(
-              style = "display: flex; justify-content: space-between; align-items: center;",
+              id = "resize_handle",
+              style = "display: flex; justify-content: space-between; align-items: center;width: 100%; cursor: ns-resize;",
               tagList(
                 div(
                   tags$span(
                     class = "input-group-btn",
                     input_task_button(
                       id = "start_btn",
-                      label = "RUN QUERY",
+                      label = "RUN ",
                       icon = icon("play"),
                       label_busy = "thinking",
                       class = "btn btn-sm btn-primary"
@@ -210,7 +207,7 @@ server <- function(input, output, session) {
                   tags$span(
                     class = "input-group-btn",
                     actionButton(
-                      inputId = "claer_btn",
+                      inputId = "clear_btn",
                       label = "CLEAR",
                       icon = icon("broom"),
                       class = glue("btn btn-sm btn-{input$dark_mode}")
@@ -223,7 +220,36 @@ server <- function(input, output, session) {
               )
             )
           )
-        )
+        ), 
+        
+        # Ajout du JavaScript pour gérer le redimensionnement
+        tags$script(HTML("
+  (function() {
+    var card = document.querySelector('.card');  // Sélectionne la carte
+    var handle = document.getElementById('resize_handle');  // Sélectionne le handle de redimensionnement
+    var startY, startHeight;
+
+    handle.addEventListener('mousedown', function(e) {
+      startY = e.clientY;
+      startHeight = parseInt(document.defaultView.getComputedStyle(card).height, 10);
+      
+      document.documentElement.addEventListener('mousemove', resize, false);
+      document.documentElement.addEventListener('mouseup', stopResize, false);
+    });
+
+    function resize(e) {
+      var newHeight = startHeight + (e.clientY - startY);
+      if (newHeight > 100) {  // Limite minimale pour ne pas rendre la carte trop petite
+        card.style.height = newHeight + 'px';
+      }
+    }
+
+    function stopResize() {
+      document.documentElement.removeEventListener('mousemove', resize, false);
+      document.documentElement.removeEventListener('mouseup', stopResize, false);
+    }
+  })();
+"))
       )
     )
     
@@ -235,12 +261,8 @@ server <- function(input, output, session) {
     
       fluidPage(
         uiOutput("editor_ui"), 
-        fluidRow(
-          column(
-            12,
-            uiOutput("mygraph")
-          )
-        )
+        uiOutput("mygraph")
+      
       )
     
   })
@@ -300,6 +322,8 @@ server <- function(input, output, session) {
       br(), 
       fluidRow(
         p("Add yours : (wip)")
+        
+        
         
         
       )
