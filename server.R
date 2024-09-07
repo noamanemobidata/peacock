@@ -146,14 +146,17 @@ server <- function(input, output, session) {
       column(
         12,
         card(
-          fill = T, max_height = 300,
+          fill = TRUE,
+          # Applique une hauteur initiale de 300px à la carte pour commencer avec cette taille
+          style = "height: 300px; resize: vertical; overflow: auto;",  # Permet le redimensionnement vertical de la carte entière
+          
           card_header(
             div(
               class = "input-group",
               tags$input(
                 id = "prompt",
                 type = "text",
-                class = "form-control  form-control-sm",
+                class = "form-control form-control-sm",
                 placeholder = "find those departments where the average salary is less than the averages for all departments. Return department ID, average salary."
               ),
               tags$span(
@@ -168,37 +171,55 @@ server <- function(input, output, session) {
               )
             )
           ),
+          
           card_body(
+            style = "display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 0;",  # Centre le contenu verticalement et horizontalement
             
-            aceEditor(outputId = "ace_editor", mode = "sql", readOnly = F, autoComplete = "live",  theme = editor_params$theme,value = editor_params$value, placeholder = "-- START YOUR SQL QUERY HERE, OR ASK AI",minLines = 7)
+            # Ace Editor centré au milieu
+            div(
+              style = "width: 100%; height: 100%;",  # Prend toute la place dans le card_body
+              aceEditor(
+                height = "100%",  # L'éditeur s'adapte à la taille disponible
+                outputId = "ace_editor", 
+                mode = "sql", 
+                readOnly = F, 
+                autoComplete = "live",  
+                theme = editor_params$theme,
+                value = editor_params$value, 
+                placeholder = "-- START YOUR SQL QUERY HERE, OR ASK AI",
+                minLines = 7
+              )
+            )
           ),
+          
           card_footer(
-            tagList(
-              div(
-                style = "float:left;",
-                tags$span(
-                  class = "input-group-btn",
-                  input_task_button(
-                    id = "start_btn",
-                    label = "RUN QUERY",
-                    icon = icon("play"),
-                    label_busy = "thinking",
-                    class = "btn btn-sm btn-primary"
+            div(
+              style = "display: flex; justify-content: space-between; align-items: center;",
+              tagList(
+                div(
+                  tags$span(
+                    class = "input-group-btn",
+                    input_task_button(
+                      id = "start_btn",
+                      label = "RUN QUERY",
+                      icon = icon("play"),
+                      label_busy = "thinking",
+                      class = "btn btn-sm btn-primary"
+                    )
+                  ),
+                  tags$span(
+                    class = "input-group-btn",
+                    actionButton(
+                      inputId = "claer_btn",
+                      label = "CLEAR",
+                      icon = icon("broom"),
+                      class = glue("btn btn-sm btn-{input$dark_mode}")
+                    )
                   )
                 ),
-                tags$span(
-                  class = "input-group-btn",
-                  actionButton(
-                    inputId = "claer_btn",
-                    label = "CLEAR",
-                    icon = icon("broom"),
-                    class = glue("btn btn-sm btn-{input$dark_mode}")
-                  )
+                div(
+                  uiOutput("status_query")
                 )
-              ),
-              div(
-                style = "float:right;",
-                uiOutput("status_query")
               )
             )
           )
