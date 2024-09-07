@@ -13,10 +13,8 @@ library(duckdb)
 library(dplyr)
 
 
-employees <- dbConnect(RSQLite::SQLite(), "data/employees.db", 
-                       #flags = SQLITE_RO, vfs = "unix-none"
-                       )
-con <- dbConnect(duckdb::duckdb(), dbdir="data/nycflights13.duckdb", read_only=F)
+employees <- dbConnect(RSQLite::SQLite(), "data/employees.db", flags = SQLITE_RO, vfs = "unix-none")
+con <- dbConnect(duckdb::duckdb(), dbdir="data/nycflights13.duckdb", read_only=T)
 
 
 OPENAI_API_KEY <- Sys.getenv("OPENAI_API_KEY")
