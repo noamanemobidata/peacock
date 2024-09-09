@@ -30,6 +30,7 @@ ui <- fluidPage(
       // Update the hidden radio button value
       Shiny.setInputValue('db', db, {priority: 'event'});
     }
+    
   ")), 
     # Custom JavaScript for Typed.js integration
     tags$script(HTML(

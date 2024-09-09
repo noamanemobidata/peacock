@@ -13,38 +13,59 @@ library(duckdb)
 library(dplyr)
 
 
-employees <- dbConnect(RSQLite::SQLite(), "data/employees.db", flags = SQLITE_RO, vfs = "unix-none")
-con <- dbConnect(duckdb::duckdb(), dbdir="data/nycflights13.duckdb", read_only=T)
-
-
+options(shiny.maxRequestSize = 500 * 1024^2)
 OPENAI_API_KEY <- Sys.getenv("OPENAI_API_KEY")
 
+# Configuration des bases de données
+db_configs <- list(
+  sqlite = list(
+    name = "SQLite",
+    connect = function() dbConnect(RSQLite::SQLite(), "data/employees.db", flags = SQLITE_RO, vfs = "unix-none"),
+    placeholder = "find those departments where the average salary is less than the averages for all departments. Return department ID, average salary.",
+    icon = "www/sqlite.svg"
+  ),
+  duckdb = list(
+    name = "DuckDB",
+    connect = function() dbConnect(duckdb::duckdb(), dbdir="data/nycflights13.duckdb", read_only=T), 
+    placeholder = "find the average distance by airline",
+    icon = "www/duckdb.svg"
+  )
+)
 
+# Fonction factory pour créer des connexions
+create_connection <- function(db_type) {
+  if (!db_type %in% names(db_configs)) {
+    stop("Unsupported database type")
+  }
+  db_configs[[db_type]]$connect()
+}
+
+# Fonction pour générer l'arbre de la base de données
 generate_db_tree <- function(con, name) {
   # Get all tables in the database
   tables <- dbListTables(con)
-
+  
   # Initialize the database structure
   db_structure <- list()
-
+  
   # For each table, get its columns
   for (table in tables) {
     columns <- dbListFields(con, table)
-
+    
     # Create the table structure
     table_structure <- structure(
       lapply(columns, function(col) structure("", sttype = "column")),
       sttype = "table",
       stopened = FALSE
     )
-
+    
     # Set the names of the list to be the column names
     names(table_structure) <- columns
-
+    
     # Add the table to the database structure
     db_structure[[table]] <- table_structure
   }
-
+  
   # Wrap the entire structure
   final_structure <- list(
     structure(
@@ -53,10 +74,10 @@ generate_db_tree <- function(con, name) {
       stopened = TRUE
     )
   )
-
+  
   # Set the name of the outer list to be the database name
   names(final_structure) <- name
-
+  
   return(final_structure)
 }
 
@@ -64,7 +85,7 @@ generate_db_tree <- function(con, name) {
 openai_response <- function(prompt, db) {
   
   
-  if(db=="EmployeeDB"){
+  if(db=="SQLite"){
     msg="You are a SQLite expert. Given an input question, first create a syntactically correct SQLite query to run, then look at the results of the query and return the answer to the input question.
 Unless the user specifies in the question a specific number of examples to obtain, query for at most 100 results using the LIMIT clause as per SQLite. You can order the results to return the most informative data in the database.
 Never query for all columns from a table. You must query only the columns that are needed to answer the question. Wrap each column name in double quotes (\") to denote them as delimited identifiers.
