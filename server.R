@@ -4,7 +4,7 @@
 
 server <- function(input, output, session) {
   # État réactif pour la connexion actuelle
-  current_db <- reactiveVal("sqlite")
+  current_db <- reactiveVal("SQLite")
   
   # Fonction pour changer de base de données
   change_database <- function(db_type) {
@@ -18,7 +18,7 @@ server <- function(input, output, session) {
   }
   
   # Initialisation
-  cons <- reactiveValues(con = create_connection("sqlite"), name = db_configs$sqlite$name)
+  cons <- reactiveValues(con = create_connection("SQLite"), name = db_configs$SQLite$name)
   
   observeEvent(input$db, {
     change_database(input$db)

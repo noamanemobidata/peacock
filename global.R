@@ -18,13 +18,13 @@ OPENAI_API_KEY <- Sys.getenv("OPENAI_API_KEY")
 
 # Configuration des bases de données
 db_configs <- list(
-  sqlite = list(
+  SQLite = list(
     name = "SQLite",
     connect = function() dbConnect(RSQLite::SQLite(), "data/employees.db", flags = SQLITE_RO, vfs = "unix-none"),
     placeholder = "find those departments where the average salary is less than the averages for all departments. Return department ID, average salary.",
     icon = "www/sqlite.svg"
   ),
-  duckdb = list(
+  DuckDB = list(
     name = "DuckDB",
     connect = function() dbConnect(duckdb::duckdb(), dbdir="data/nycflights13.duckdb", read_only=T), 
     placeholder = "find the average distance by airline",
