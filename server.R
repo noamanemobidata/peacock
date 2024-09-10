@@ -22,6 +22,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$db, {
     change_database(input$db)
+    nav_select(id = "tab_selector", selected = "Home", session = session)
   })
   
   observeEvent(input$submit_btn, {
@@ -241,18 +242,6 @@ server <- function(input, output, session) {
               onclick = sprintf("selectDatabase('%s')", db)
             )
           })
-        )
-      ),
-      br(), 
-      page_navbar(
-        title = "Add yours from :  ",
-        gap = "0.5rem", padding = "0.5rem",
-        underline = TRUE, footer = NULL,
-        nav_panel(title = "file ", icon = icon('file'), 
-                  p("WIP")
-        ),
-        nav_panel(title = "database", icon = icon('database'), 
-                  p("WIP")
         )
       )
     )
